@@ -297,8 +297,25 @@ cart2sph2tp <- function(xyz) {
   return(xyz)
 }
 
+tp2sph2cart <- function(thetaphi) {
+  thetaphi <- as.matrix(thetaphi)
+  colnames(thetaphi) <- c('theta','phi')
+  thetaphi %<>% as_tibble() %>%
+    # Convert from degrees to radians
+    mutate(theta_rad = theta / 180 * pi,
+           phi_rad = phi / 180 * pi) %>%
+    # Convert spherical to Cartesian (standard conversion)
+    mutate(x = sin(theta_rad) * cos(phi_rad),
+           y = sin(theta_rad) * sin(phi_rad),
+           z = cos(theta_rad)) %>%
+    # Reverse the inside-out view transformation (negate y)
+    mutate(y = -y) %>%
+    select(x, y, z) %>%
+    as.data.frame()
+  return(thetaphi)
+}
 
-# - polar to Mollweide, input thetaphi is N x 2 [0<=theta<=180, -180<=phi<=180] in degree, output [x,y]
+# - polar-tp to Mollweide, input thetaphi is N x 2 [0<=theta<=180, -180<=phi<=180] in degree, output [x,y]
 # https://mathworld.wolfram.com/MollweideProjection.html
 Mollweide <- function(thetaphi){
   N0 <- nrow(thetaphi)
@@ -327,6 +344,54 @@ Mollweide <- function(thetaphi){
   }
   xy0[!ii_NA,] <- xy
   return(xy0)
+}
+
+
+# - Mollweide to polar-tp, input xy is N x 2 [x,y] coordinates, output [theta, phi] in degrees [0<=theta<=180, -180<=phi<=180]
+InverseMollweide <- function(xy){
+  N0 <- nrow(xy)
+  thetaphi0 <- matrix(ncol = 2, nrow = N0)
+  
+  # deal with NA
+  ii_NA <- is.na(xy[,1]) | is.na(xy[,2])
+  xy <- xy[!ii_NA,]
+  N <- nrow(xy)
+  
+  thetaphi <- matrix(ncol = 2, nrow = N)
+  
+  for (j in 1:N) {
+    x <- xy[j, 1]
+    y <- xy[j, 2]
+    
+    # Solve for theta
+    theta <- asin(y / sqrt(2))
+    
+    # Solve for lambda (longitude)
+    if (abs(cos(theta)) < 1e-10) {
+      # At poles, longitude is undefined, set to 0
+      lambda <- 0
+    } else {
+      lambda <- pi * x / (2 * sqrt(2) * cos(theta))
+    }
+    
+    # Convert from auxiliary angle theta to latitude phi
+    # The relationship is: 2*theta + sin(2*theta) = pi*sin(phi)
+    sin_phi <- (2 * theta + sin(2 * theta)) / pi
+    
+    # Clamp to valid range for asin
+    sin_phi <- pmax(-1, pmin(1, sin_phi))
+    phi <- asin(sin_phi)
+    
+    # Convert back to degrees
+    # phi is latitude in radians, convert to theta (colatitude) in degrees
+    theta_deg <- 90 - phi * 180 / pi
+    lambda_deg <- lambda * 180 / pi
+    
+    thetaphi[j, ] <- c(theta_deg, lambda_deg)
+  }
+  
+  thetaphi0[!ii_NA, ] <- thetaphi
+  return(thetaphi0)
 }
 
 # - Mercator

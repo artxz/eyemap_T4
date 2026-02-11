@@ -42,6 +42,17 @@ plt <- plt_Mo +
 plt
 # dev.off()
 
+# # outline in xyz
+# tp <- InverseMollweide(ahull_left)
+# xyz <- tp2sph2cart(tp)
+# write.csv(xyz, "fov_left_xyz.csv", row.names = F)
+# write.csv(ahull_left, "fov_left_Mo.csv", row.names = F)
+# 
+# tp <- InverseMollweide(ahull_right)
+# xyz <- tp2sph2cart(tp)
+# write.csv(xyz, "fov_right_xyz.csv", row.names = F)
+# write.csv(ahull_right, "fov_right_Mo.csv", row.names = F)
+
 # Fig.3F, inter-ommatidia angle --------------------------
 
 ioa_hex <- cbind(ucl_rot_Mo_right, rowMeans(nb_dist_ucl_right[,2:7], na.rm = T)/pi*180)
