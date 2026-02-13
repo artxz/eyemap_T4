@@ -284,6 +284,21 @@ windows(width = 12, height = 8)
 plt
 # dev.off()
 
+
+# # whole field, for animation
+# plt <- plt_Mo +
+#   geom_point(data=df_pos, aes(x = xM, y = yM), colour=pal_T4[LL], size=0.8) +
+#   geom_segment(
+#     # data = df_arrow[245,],
+#     data = df_arrow,
+#     aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],size =1,
+#     arrow = arrow(length = unit(0.015, "npc"), angle=20, ends="last", type = "closed")
+#   )
+# windows(width = 12, height = 6)
+# pdf(paste0("T4", letters[LL], "_RF_Moll_all.pdf"), width = 9.5, height = 6.5)
+# plt
+# dev.off()
+
 # cont. ED Fig.6A, Mercator projection ---------------------------------------------
 
 ## ## choose type
